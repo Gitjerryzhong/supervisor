@@ -1,0 +1,4 @@
+rootProject.name = 'tm-supervisor'
+
+include 'tm-supervisor-api'
+include 'tm-supervisor-web'
