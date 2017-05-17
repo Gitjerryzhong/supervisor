@@ -70,122 +70,61 @@ COMMENT ON VIEW tm.dv_teacher_active
   -- View: tm.dv_teacher_role
 
 -- DROP VIEW tm.dv_teacher_role;
-
-CREATE OR REPLACE VIEW tm.dv_teacher_role AS
- WITH admin_class_at_school AS (
-         SELECT ac.supervisor_id,
-            ac.counsellor_id
-           FROM ea.admin_class ac
-             JOIN ea.major m ON ac.major_id = m.id
-             JOIN ea.subject s ON m.subject_id::text = s.id::text
-          WHERE 'now'::text::date < make_date(m.grade + s.length_of_schooling, 7, 1)
-        )
- SELECT t.id AS user_id,
-    'ROLE_IN_SCHOOL_TEACHER'::text AS role_id
-   FROM ea.teacher t
-  WHERE t.at_school = true
+-- 应用权限
+create or replace view tm.dv_teacher_role as
+with admin_class_at_school as (
+    select ac.supervisor_id, ac.counsellor_id
+    from ea.admin_class ac
+    join ea.major m on ac.major_id = m.id
+    join ea.subject s on m.subject_id = s.id
+    where current_date < make_date(grade + length_of_schooling, 7, 1)
+)
+select t.id as user_id, 'ROLE_IN_SCHOOL_TEACHER' as role_id
+from ea.teacher t
+where t.at_school = true
+union all
+select t.id as user_id, 'ROLE_SUBJECT_DIRECTOR' as role_id
+from ea.teacher t
+where exists(select * from tm.subject_settings where director_id = t.id)
+union all
+select t.id as user_id, 'ROLE_SUBJECT_SECRETARY' as role_id
+from ea.teacher t
+where exists(select * from tm.subject_settings where secretary_id = t.id)
+union all
+select t.id as user_id, 'ROLE_COURSE_TEACHER' as role_id
+from ea.teacher t
+where exists(
+    select *
+    from ea.course_class
+    join ea.task on task.course_class_id = course_class.id
+    join ea.task_schedule on task_schedule.task_id = task.id
+    where course_class.term_id = (select id from ea.term where active = true)
+    and task_schedule.teacher_id = t.id
+)
+union all
+select t.id as user_id, 'ROLE_PLACE_BOOKING_CHECKER' as role_id
+from ea.teacher t
+join booking_auth ba on ba.checker_id = t.id
+union all
+select t.id as user_id, 'ROLE_CLASS_SUPERVISOR' as role_id
+from ea.teacher t
+where exists(select * from admin_class_at_school where supervisor_id = t.id)
+union all
+select t.id as user_id, 'ROLE_STUDENT_COUNSELLOR' as role_id
+from ea.teacher t
+where exists(select * from admin_class_at_school where counsellor_id = t.id)
 UNION ALL
- SELECT t.id AS user_id,
-    'ROLE_SUBJECT_DIRECTOR'::text AS role_id
-   FROM ea.teacher t
-  WHERE (EXISTS ( SELECT subject_settings.subject_id,
-            subject_settings.director_id,
-            subject_settings.secretary_id
-           FROM tm.subject_settings
-          WHERE subject_settings.director_id::text = t.id::text))
+SELECT s.teacher_id AS user_id,
+'ROLE_SUPERVISOR_ADMIN'::text AS role_id
+FROM tm.supervisor s
+WHERE s.role_type = 0
 UNION ALL
- SELECT t.id AS user_id,
-    'ROLE_SUBJECT_SECRETARY'::text AS role_id
-   FROM ea.teacher t
-  WHERE (EXISTS ( SELECT subject_settings.subject_id,
-            subject_settings.director_id,
-            subject_settings.secretary_id
-           FROM tm.subject_settings
-          WHERE subject_settings.secretary_id::text = t.id::text))
-UNION ALL
- SELECT t.id AS user_id,
-    'ROLE_COURSE_TEACHER'::text AS role_id
-   FROM ea.teacher t
-  WHERE (EXISTS ( SELECT course_class.id,
-            course_class.assess_type,
-            course_class.code,
-            course_class.course_id,
-            course_class.department_id,
-            course_class.enabled,
-            course_class.end_week,
-            course_class.property_id,
-            course_class.start_week,
-            course_class.teacher_id,
-            course_class.term_id,
-            course_class.test_type,
-            course_class.period_experiment,
-            course_class.period_theory,
-            course_class.period_weeks,
-            task.id,
-            task.code,
-            task.course_class_id,
-            task.course_item_id,
-            task.end_week,
-            task.is_primary,
-            task.start_week,
-            task_schedule.id,
-            task_schedule.day_of_week,
-            task_schedule.end_week,
-            task_schedule.odd_even,
-            task_schedule.place_id,
-            task_schedule.start_section,
-            task_schedule.start_week,
-            task_schedule.task_id,
-            task_schedule.teacher_id,
-            task_schedule.total_section
-           FROM ea.course_class
-             JOIN ea.task ON task.course_class_id = course_class.id
-             JOIN ea.task_schedule ON task_schedule.task_id = task.id
-          WHERE course_class.term_id = (( SELECT term.id
-                   FROM ea.term
-                  WHERE term.active = true)) AND task_schedule.teacher_id::text = t.id::text))
-UNION ALL
- SELECT t.id AS user_id,
-    'ROLE_PLACE_BOOKING_CHECKER'::text AS role_id
-   FROM ea.teacher t
-     JOIN tm.booking_auth ba ON ba.checker_id::text = t.id::text
-UNION ALL
- SELECT t.id AS user_id,
-    'ROLE_CLASS_SUPERVISOR'::text AS role_id
-   FROM ea.teacher t
-  WHERE (EXISTS ( SELECT admin_class_at_school.supervisor_id,
-            admin_class_at_school.counsellor_id
-           FROM admin_class_at_school
-          WHERE admin_class_at_school.supervisor_id::text = t.id::text))
-UNION ALL
- SELECT t.id AS user_id,
-    'ROLE_STUDENT_COUNSELLOR'::text AS role_id
-   FROM ea.teacher t
-  WHERE (EXISTS ( SELECT admin_class_at_school.supervisor_id,
-            admin_class_at_school.counsellor_id
-           FROM admin_class_at_school
-          WHERE admin_class_at_school.counsellor_id::text = t.id::text))
-UNION ALL
- SELECT s.teacher_id AS user_id,
-    'ROLE_SUPERVISOR_ADMIN'::text AS role_id
-   FROM tm.supervisor s
-  WHERE s.role_type = 0
-UNION ALL
- SELECT DISTINCT s.teacher_id AS user_id,
-    'ROLE_SUPERVISOR'::text AS role_id
-   FROM tm.supervisor s
-     JOIN tm.supervisor_role r ON s.role_type = r.id
-     JOIN ea.term t ON s.term_id = t.id
-  WHERE (r.name::text = '校督导'::text OR r.name::text = '院督导'::text) AND t.active IS TRUE
-UNION ALL
- SELECT DISTINCT s.teacher_id AS user_id,
-    'ROLE_SUPERVISOR_VIEWER'::text AS role_id
-   FROM tm.supervisor s
-     JOIN tm.supervisor_role r ON s.role_type = r.id
-  WHERE r.name::text = '校督导'::text OR r.name::text = '院督导'::text;
-
-ALTER TABLE tm.dv_teacher_role
-  OWNER TO tm;
+SELECT DISTINCT s.teacher_id AS user_id,
+'ROLE_SUPERVISOR'::text AS role_id
+FROM tm.supervisor s
+JOIN tm.supervisor_role r ON s.role_type = r.id
+JOIN ea.term t ON s.term_id = t.id
+WHERE (r.name::text = '校督导'::text OR r.name::text = '院督导'::text) AND t.active IS TRUE;
 
 /*历史遗留数据视图*/
 CREATE OR REPLACE VIEW tm.dv_supervisor_history AS
