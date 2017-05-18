@@ -63,7 +63,8 @@ order by form.supervisorDate
         def me = Teacher.load(userId)
         if (!me) return null
         if(form) {
-            if(form.teacher?.department?.id !=me.department?.id){
+            def isAdmin = supervisorSettingService.isAdmin(userId)
+            if(!isAdmin && form.teacher?.department?.id !=me.department?.id){
                 throw new BadRequestException()
             }
             def schedule = scheduleForSupervisorService.showSchedule(form.taskSchedule.id.toString())
@@ -110,8 +111,9 @@ order by form.supervisorDate
         def form = SupervisorLectureRecord.get(id)
 
         if(form) {
+            def isAdmin = supervisorSettingService.isAdmin(userId)
             def me = Teacher.load(userId)
-            if (!me || me.department?.id !=form.supervisor?.department?.id) {
+            if (!isAdmin && (!me || me.department?.id !=form.supervisor?.department?.id)) {
                 throw new ForbiddenException()
             }
             if (form.status!=1) {
