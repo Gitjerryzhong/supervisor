@@ -6,40 +6,40 @@ import grails.transaction.Transactional
 class LegacyDataService {
 
     def findSupervisors(Integer termId) {
-        LegacyData.executeQuery'''
+        ObservationLegacyForm.executeQuery'''
 select DISTINCT new map(
     l.inpectorcode as inspectorCode,
     l.inpectorname as inspectorName
 )
-from LegacyData l
+from ObservationLegacyForm l
 where l.termId=:termId
 ''',[termId: termId]
 
     }
 
     def getTerms(){
-        LegacyData.executeQuery'''
+        ObservationLegacyForm.executeQuery'''
 select DISTINCT l.termId
-from LegacyData l
+from ObservationLegacyForm l
 order by l.termId desc
 '''
     }
 
     def list(Integer termId){
-        LegacyData.executeQuery'''
+        ObservationLegacyForm.executeQuery'''
 select DISTINCT l
-from LegacyData l
+from ObservationLegacyForm l
 where l.termId=:termId
 order by l.listentime desc
 ''',[termId: termId]
     }
 
     def types(Integer termId){
-        LegacyData.executeQuery'''
-select l.type
-from LegacyData l
+        ObservationLegacyForm.executeQuery'''
+select l.observerType
+from ObservationLegacyForm l
 where l.termId=:termId
-group by l.type
+group by l.observerType
 ''',[termId: termId]
     }
 }

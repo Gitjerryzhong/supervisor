@@ -10,7 +10,7 @@ class SupervisorCommand {
     Integer roleType
     String departmentId
     def tostring(){
-        return "supervisorId:${supervisorId},userId:${userId},termId:${termId},roleType:${roleType};departmentId:${departmentId}"
+        return "supervisorId:${supervisorId},userId:${userId},termId:${termId},observerType:${roleType};departmentId:${departmentId}"
     }
 
 }

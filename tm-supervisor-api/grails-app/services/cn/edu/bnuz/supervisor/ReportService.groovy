@@ -1,6 +1,5 @@
 package cn.edu.bnuz.supervisor
 
-import cn.edu.bnuz.bell.http.ForbiddenException
 import cn.edu.bnuz.bell.master.TermService
 import cn.edu.bnuz.bell.organization.Teacher
 import grails.transaction.Transactional
@@ -8,35 +7,32 @@ import grails.transaction.Transactional
 @Transactional
 class ReportService {
     TermService termService
-    SupervisorSettingService supervisorSettingService
+    ObserverSettingService observerSettingService
     def messageSource
 
     def groupByDepartment(String userId) {
         def term = termService.activeTerm
-//        if(isCollegeSupervisor(userId,term.id)){
-//            throw new ForbiddenException()
-//        }
 
         def supervisor=messageSource.getMessage("main.supervisor.university",null, Locale.CHINA)
-        def result =SupervisorLectureRecord.executeQuery '''
+        def result =ObservationForm.executeQuery '''
 select new map(
   department.name as department,
   count(*) as supervisorTimes,
   sum(form.totalSection) as totalSection
 )
-from SupervisorLectureRecord form
+from ObservationForm form
 join form.taskSchedule schedule
-join form.supervisorRole supervisorRole
+join form.observerType observerType
 join schedule.task task
 join task.courseClass courseClass
 join courseClass.department department
 where form.status > 0
-  and supervisorRole.name = :type
+  and observerType.name = :observerType
   and courseClass.term.id = :termId
 group by department.name
 ''', [termId: term.id, type: supervisor]
         return [
-                isAdmin:supervisorSettingService.isAdmin(userId),
+                isAdmin:observerSettingService.isAdmin(userId),
                 list: result,
         ]
 
@@ -46,35 +42,30 @@ group by department.name
         def term = termService.activeTerm
 
         def supervisor=messageSource.getMessage("main.supervisor.university",null, Locale.CHINA)
-        def result =SupervisorLectureRecord.executeQuery '''
+        def result =ObservationForm.executeQuery '''
 select new map(
-  supervisor.id as supervisorId,
-  supervisor.name as supervisorName,
+  observer.id as supervisorId,
+  observer.name as supervisorName,
   department.name as departmentName,
   count(*) as supervisorTimes,
   sum(form.totalSection) as totalSection
 )
-from SupervisorLectureRecord form
-join form.supervisor supervisor
+from ObservationForm form
+join form.observer observer
 join form.taskSchedule schedule
-join form.supervisorRole supervisorRole
+join form.observerType observerType
 join schedule.task task
 join task.courseClass courseClass
-join supervisor.department department
+join observer.department department
 where form.status > 0
-  and supervisorRole.name = :type
+  and observerType.name = :observerType
   and courseClass.term.id = :termId
-group by supervisor,department
+group by observer,department
 ''', [termId: term.id, type: supervisor]
         return [
                 list: result,
         ]
 
-    }
-
-    boolean isCollegeSupervisor(String userId, Integer termId){
-        def collegeSupervisor=messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
-        return supervisorSettingService.isCollegeSupervisor(userId, termId , collegeSupervisor)
     }
 
     def teacherActive(String userId){
@@ -91,44 +82,41 @@ where ta.hasSupervisor is null
 order by ta.departmentName,teacherName
 '''
         return [
-                isAdmin:supervisorSettingService.isAdmin(userId),
+                isAdmin:observerSettingService.isAdmin(userId),
                 list: result,
         ]
     }
 
     def getSupervisorRole(String userId){
         def term = termService.activeTerm
-        if(supervisorSettingService.isAdmin(userId)){
+        if(observerSettingService.isAdmin(userId)){
             def adminSupervisor=messageSource.getMessage("main.supervisor.admin",null, Locale.CHINA)
             return [adminSupervisor]
-        } else return supervisorSettingService.getSupervisorRole(userId, term.id)
+        } else return observerSettingService.getSupervisorRole(userId, term.id)
     }
 
     def byTeacherForCollege(String userId) {
         def term = termService.activeTerm
         def supervisor=messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
-//        if(!supervisorSettingService.isCollegeSupervisor(userId,term.id,supervisor)){
-//            throw new ForbiddenException()
-//        }
 
         def dept = Teacher.load(userId)?.department.id
 
-        SupervisorLectureRecord.executeQuery '''
+        ObservationForm.executeQuery '''
 select new map(
   scheduleTeacher.id as teacherId,
   scheduleTeacher.name as teacherName,
   count(*) as supervisorTimes,
   department.name as departmentName
 )
-from SupervisorLectureRecord form
+from ObservationForm form
 join form.teacher scheduleTeacher
 join form.taskSchedule schedule
-join form.supervisorRole supervisorRole
+join form.observerType observerType
 join schedule.task task
 join task.courseClass courseClass
 join courseClass.department department
 where form.status > 0
-  and supervisorRole.name = :type
+  and observerType.name = :observerType
   and courseClass.term.id = :termId
   and (scheduleTeacher.department.id = :dept or department.id = :dept)
 group by scheduleTeacher,department
@@ -137,14 +125,14 @@ group by scheduleTeacher,department
     }
 
     def byTeacherForUniversity(){
-        SuperviseCount.executeQuery '''
+        ObservationCount.executeQuery '''
 select new map(
     view.teacherId as teacherId,
     view.teacherName as teacherName,
     view.departmentName as departmentName,
     view.superviseCount as supervisorTimes
 )
-from SuperviseCount view
+from ObservationCount view
 '''
     }
 

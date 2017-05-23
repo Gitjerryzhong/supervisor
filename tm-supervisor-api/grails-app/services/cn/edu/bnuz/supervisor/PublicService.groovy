@@ -8,10 +8,10 @@ import cn.edu.bnuz.bell.http.ForbiddenException
 @Transactional
 class PublicService {
     TermService termService
-    ScheduleForSupervisorService scheduleForSupervisorService
+    ScheduleService scheduleService
 
     def list(String userId){
-        SupervisePublic.executeQuery '''
+        ObservationPublic.executeQuery '''
 select new map(
   form.id as id,
   form.isLegacy as isLegacy,
@@ -25,24 +25,24 @@ select new map(
   form.courseName as course,
   form.courseOtherInfo as courseOtherInfo
 )
-from SupervisePublic form
+from ObservationPublic form
 where form.teacherId = :userId
 order by form.supervisorDate
 ''', [userId: userId]
     }
 
     def getFormForShow(String userId, Long id){
-        def form = SupervisorLectureRecord.get(id)
+        def form = ObservationForm.get(id)
 
         if(form) {
             if(form.teacher.id !=userId){
                 throw new BadRequestException()
             }
-            def schedule = scheduleForSupervisorService.showSchedule(form.taskSchedule.id.toString())
+            def schedule = scheduleService.showSchedule(form.taskSchedule.id.toString())
             schedule.form = getFormInfo(form)
             schedule.evaluationSystem.each { group ->
                 group.value.each { item ->
-                    item.value = Evaluations.findByEvaluatItemAndSupervisorLectureRecord(EvaluatItems.load(item.id), form)?.value
+                    item.value = ObservationItem.findByObservationCriteriaItemAndObservationForm(ObservationCriteriaItem.load(item.id), form)?.value
                 }
             }
             return schedule
@@ -50,7 +50,7 @@ order by form.supervisorDate
         return null
     }
 
-    Map getFormInfo(SupervisorLectureRecord form) {
+    Map getFormInfo(ObservationForm form) {
         return [
                 id: form.id,
                 scheduleId: form.taskSchedule.id,
@@ -59,8 +59,8 @@ order by form.supervisorDate
                 totalSection: form.totalSection,
                 teachingMethods: form.teachingMethods,
                 supervisorDate: form.supervisorDate,
-                type: form.supervisorRoleId,
-                typeName: form.supervisorRole.name,
+                type: form.observerType.id,
+                typeName: form.observerType.name,
                 place: form.place,
                 earlier: form.earlier,
                 late: form.late,
@@ -78,7 +78,7 @@ order by form.supervisorDate
     }
 
     def legacylist(String userId){
-        LegacyData.executeQuery'''
+        ObservationLegacyForm.executeQuery'''
 select new map(
 l.id as id,
 l.teachercode as teachercode,
@@ -90,13 +90,13 @@ l.collegename as collegename,
 l.listentime as listentime,
 l.evaluategrade as evaluategrade
 )
-from LegacyData l
+from ObservationLegacyForm l
 where l.teachercode = :userId and l.state = 'yes'
 ''',[userId: userId]
     }
 
     def legacyShow(String userId, Long id){
-        def form = LegacyData.get(id)
+        def form = ObservationLegacyForm.get(id)
         if(!form || form.teachercode != userId){
             throw new ForbiddenException()
         }else {

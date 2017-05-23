@@ -20,6 +20,6 @@ class LegacyDataController {
         ])
     }
     def show(Long id){
-        renderJson(LegacyData.get(id))
+        renderJson(ObservationLegacyForm.get(id))
     }
 }

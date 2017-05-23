@@ -9,11 +9,11 @@ import org.springframework.security.access.prepost.PreAuthorize
  */
 @PreAuthorize('hasAuthority("PERM_ADMIN_SUPERVISOR_WRITE")')
 class SettingController {
-    SupervisorSettingService supervisorSettingService
+    ObserverSettingService observerSettingService
     DepartmentService departmentService
     TermService termService
     def index() {
-        renderJson(supervisorSettingService.list())
+        renderJson(observerSettingService.list())
     }
 
 
@@ -24,7 +24,7 @@ class SettingController {
         SupervisorCommand cmd = new SupervisorCommand()
         bindData cmd, request.JSON
         log.debug cmd.tostring()
-        def form=supervisorSettingService.save(cmd)
+        def form=observerSettingService.save(cmd)
         if(form)  renderJson([id:form?.id])
         else renderBadRequest()
     }
@@ -35,10 +35,10 @@ class SettingController {
      */
     def create(){
         renderJson(
-                roles: supervisorSettingService.roleTypes(),
+                roles: observerSettingService.roleTypes(),
                 departments: departmentService.teachingDepartments,
                 activeTerm: termService.activeTerm?.id,
-                terms: supervisorSettingService.terms
+                terms: observerSettingService.terms
 
         );
     }
@@ -47,7 +47,7 @@ class SettingController {
      * 删除
      */
     def delete(Long id){
-        supervisorSettingService.delete(id)
+        observerSettingService.delete(id)
         renderOk()
     }
 }

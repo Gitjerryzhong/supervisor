@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize
  */
 @PreAuthorize('hasAuthority("PERM_CO_SUPERVISOR_ADMIN")')
 class SupervisorDepartmentController {
-    SupervisorSettingService supervisorSettingService
+    ObserverSettingService supervisorSettingService
     SecurityService securityService
     SupervisorDepartmentService supervisorDepartmentService
     def messageSource
@@ -32,7 +32,7 @@ class SupervisorDepartmentController {
         log.debug cmd.tostring()
         cmd.departmentId = ''
         def collegeSupervisor = messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
-        def supervisorRole=SupervisorRole.findByName(collegeSupervisor)
+        def supervisorRole=ObserverType.findByName(collegeSupervisor)
         cmd.roleType = supervisorRole?.id
         println cmd.tostring()
         def form=supervisorSettingService.save(cmd)
@@ -69,7 +69,7 @@ class SupervisorDepartmentController {
      * 删除
      */
     def delete(Long id){
-        def supervisor = Supervisor.load(id)
+        def supervisor = Observer.load(id)
         if(!supervisor){
             throw new BadRequestException()
         }

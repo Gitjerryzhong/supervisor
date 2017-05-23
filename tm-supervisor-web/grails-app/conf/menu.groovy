@@ -6,7 +6,7 @@ menuGroup 'main', {
     }
     supervisor 51,{
         courseView          10, 'PERM_SUPERVISOR_WRITE', '/web/supervisor/users/${userId}/schedules'
-        supervisorForm      20, 'PERM_SUPERVISOR_WRITE', '/web/supervisor/users/${userId}/supervisors'
+        observationForm      20, 'PERM_SUPERVISOR_WRITE', '/web/supervisor/users/${userId}/observations'
         report              40, 'PERM_SUPERVISOR_WRITE', '/web/supervisor/users/${userId}/reports'
         approval            50, 'PERM_CO_SUPERVISOR_APPROVE', '/web/supervisor/approvers/${userId}/supervises'
     }

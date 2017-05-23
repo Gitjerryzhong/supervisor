@@ -10,7 +10,7 @@ class SupervisorDepartmentService {
     def messageSource
 
     def list(String departmentId, String roleType) {
-        Supervisor.executeQuery '''
+        Observer.executeQuery '''
 select new Map(
   s.id as id,
   t.id as tId,
@@ -19,10 +19,10 @@ select new Map(
   d.id as dId,
   d.name as dName,
   s.termId as termId,
-  r.name as roleType
+  r.name as observerType
 )
-from Supervisor s join s.teacher t join s.department d,SupervisorRole r
-where s.roleType = r.id and d.id = :departmentId and r.name = :roleType
+from Observer s join s.teacher t join s.department d,ObserverType r
+where s.observerType = r.id and d.id = :departmentId and r.name = :observerType
 ''',[departmentId:departmentId, roleType: roleType]
     }
 
@@ -44,24 +44,24 @@ and (t.id like :query or t.name like :query)
         def term = termService.activeTerm
 
         def type =messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
-        def result =SupervisorLectureRecord.executeQuery '''
+        def result =ObservationForm.executeQuery '''
 select new map(
-  supervisor.name as supervisor,
+  observer.name as observer,
   count(*) as supervisorTimes,
   sum(form.totalSection) as totalSection
 )
-from SupervisorLectureRecord form
-join form.supervisor supervisor
+from ObservationForm form
+join form.observer observer
 join form.taskSchedule schedule
-join form.supervisorRole supervisorRole
+join form.observerType observerType
 join schedule.task task
 join task.courseClass courseClass
-join supervisor.department department
+join observer.department department
 where form.status > 0
-  and supervisorRole.name = :type
+  and observerType.name = :observerType
   and courseClass.term.id = :termId
   and department.id = :departmentId
-group by supervisor
+group by observer
 ''', [termId: term.id, type: type, departmentId: departmentId]
         return [
                 list: result,

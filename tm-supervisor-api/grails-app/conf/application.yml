@@ -2,7 +2,7 @@
 grails:
     profile: rest-api
     codegen:
-        defaultPackage: tm.supervisor.api
+        defaultPackage: tm.observer.api
     spring:
         transactionManagement:
             proxies: false

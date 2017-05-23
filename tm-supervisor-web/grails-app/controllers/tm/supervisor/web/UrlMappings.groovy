@@ -4,8 +4,8 @@ class UrlMappings {
 
     static mappings = {
         "/users"(resources: 'user', includes: []) {
-            "/schedules"(resources: 'lectureRecord', includes: ['index'])
-            "/supervisors"(resources: 'supervisorForm', includes: ['index'])
+            "/schedules"(resources: 'schedule', includes: ['index'])
+            "/observations"(resources: 'observationForm', includes: ['index'])
             "/reports"(resources: 'report', includes: ['index','show']){
                 collection {
                     "/unsupervised"(controller: 'report', action: 'unsupervised', method: 'GET')

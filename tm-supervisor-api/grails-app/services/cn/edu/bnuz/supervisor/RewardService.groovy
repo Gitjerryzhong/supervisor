@@ -7,22 +7,22 @@ import grails.transaction.Transactional
 @Transactional
 class RewardService {
     TermService termService
-    SupervisorSettingService supervisorSettingService
+    ObserverSettingService observerSettingService
     def messageSource
     def list(String userId, String month){
         def term = termService.activeTerm
-        if(!supervisorSettingService.isAdmin(userId)) {
+        if(!observerSettingService.isAdmin(userId)) {
             throw new ForbiddenException()
         }
         def supervisor=messageSource.getMessage("main.supervisor.university",null, Locale.CHINA)
-        SupervisorLectureRecord.executeQuery '''
+        ObservationForm.executeQuery '''
 select new map(
   form.id as id,
   form.supervisorDate as supervisorDate,
   form.status as status,
-  supervisor.id as supervisorId,
-  supervisor.name as supervisorName,
-  supervisorRole.name as typeName,
+  observer.id as supervisorId,
+  observer.name as supervisorName,
+  observerType.name as typeName,
   schedule.id as scheduleId,
   department.name as department,
   scheduleTeacher.id as teacherId,
@@ -33,10 +33,10 @@ select new map(
   course.name as course,
   courseClass.term.id as termId
 )
-from SupervisorLectureRecord form
-join form.supervisor supervisor
+from ObservationForm form
+join form.observer observer
 join form.taskSchedule schedule
-join form.supervisorRole supervisorRole
+join form.observerType observerType
 join schedule.task task
 join task.courseClass courseClass
 join courseClass.course course
@@ -45,7 +45,7 @@ join schedule.teacher scheduleTeacher
 where courseClass.term.id = :termId
 and form.status>0
 and form.supervisorDate like :date
-and supervisorRole.name = :role
+and observerType.name = :role
 and form.rewardDate is null
 order by form.supervisorDate
 ''', [ termId: term.id, date:"%-${month}-%", role:supervisor]
@@ -53,9 +53,9 @@ order by form.supervisorDate
 
     def getMonthes(){
         def term = termService.activeTerm
-        SupervisorLectureRecord.executeQuery '''
+        ObservationForm.executeQuery '''
 select distinct substring(form.supervisorDate,6,2)
-from SupervisorLectureRecord form
+from ObservationForm form
 join form.taskSchedule schedule
 join schedule.task task
 join task.courseClass courseClass
@@ -66,15 +66,15 @@ order by substring(form.supervisorDate,6,2)
 
     def done(String userId, String month){
         def term = termService.activeTerm
-        if(!supervisorSettingService.isAdmin(userId)) {
+        if(!observerSettingService.isAdmin(userId)) {
             throw new ForbiddenException()
         }
         def supervisor=messageSource.getMessage("main.supervisor.university",null, Locale.CHINA)
-        SupervisorLectureRecord.executeUpdate'''
-update SupervisorLectureRecord f
+        ObservationForm.executeUpdate'''
+update ObservationForm f
 set f.rewardDate = now()
 where id in(
-select v.id from SuperviseView v where v.termid = :termId and v.status > 0 and substring(v.supervisorDate,6,2) = :month and v.typeName = :type
+select v.id from ObservationView v where v.termid = :termId and v.status > 0 and substring(v.supervisorDate,6,2) = :month and v.typeName = :observerType
 )
 ''',[termId: term.id, month: month, type: supervisor]
     }

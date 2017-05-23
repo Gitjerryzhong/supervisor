@@ -14,15 +14,13 @@ class UrlMappings {
                     "/teacherActive"(controller: 'schedule', action: 'teacherActiveList', method: 'GET')
                 }
             }
-            "/supervisors"(resources: "supervisorForm"){
+            "/supervisors"(resources: "observationForm"){
                 collection {
-                    "/cancel"(controller: 'supervisorForm', action: 'cancel', method: 'GET')
-                    "/submit"(controller: 'supervisorForm', action: 'submit', method: 'GET')
-                    "/feed"(controller: 'supervisorForm', action: 'feed', method: 'GET')
+                    "/cancel"(controller: 'observationForm', action: 'cancel', method: 'GET')
+                    "/submit"(controller: 'observationForm', action: 'submit', method: 'GET')
+                    "/feed"(controller: 'observationForm', action: 'feed', method: 'GET')
                 }
             }
-            "/views"(resources: "supervisorView")
-
 
             "/reports"(resources: "report"){
                 collection {

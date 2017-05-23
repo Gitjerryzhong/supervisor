@@ -9,7 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize
  */
 @PreAuthorize('hasAuthority("PERM_ADMIN_SUPERVISOR_WRITE")')
 class SupervisorSettingController {
-    SupervisorSettingService supervisorSettingService
+    ObserverSettingService supervisorSettingService
     DepartmentService departmentService
     TermService termService
     def index() {
