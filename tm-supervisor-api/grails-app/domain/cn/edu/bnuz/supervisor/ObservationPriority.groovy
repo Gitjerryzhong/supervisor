@@ -1,6 +1,6 @@
 package cn.edu.bnuz.supervisor
 
-class TeacherActive {
+class ObservationPriority {
     String teacherId
     String teacherName
     String departmentName
@@ -8,6 +8,6 @@ class TeacherActive {
     String isnew
     String hasSupervisor
     static mapping = {
-        table 'dv_teacher_active'
+        table 'dv_observation_priority'
     }
 }

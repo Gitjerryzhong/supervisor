@@ -21,7 +21,7 @@ class SettingController {
      * 保存数据
      */
     def save(){
-        SupervisorCommand cmd = new SupervisorCommand()
+        ObserverCommand cmd = new ObserverCommand()
         bindData cmd, request.JSON
         log.debug cmd.tostring()
         def form=observerSettingService.save(cmd)

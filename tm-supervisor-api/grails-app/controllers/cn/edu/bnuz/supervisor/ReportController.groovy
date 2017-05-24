@@ -19,8 +19,8 @@ class ReportController {
         renderJson(reportService.groupByDepartment(userId))
     }
 
-    def supervisorReport(String userId){
-        renderJson(reportService.groupBySupervisor(userId))
+    def countByObserver(String userId){
+        renderJson(reportService.countByObserver(userId))
     }
 
     def teacherReport(String userId){
@@ -29,7 +29,6 @@ class ReportController {
 
     def teacherSupervisedReport(String userId){
         String type = params.t
-        println type
         if("university"==type) renderJson(reportService.byTeacherForUniversity())
         else if("college"==type) renderJson(reportService.byTeacherForCollege(userId))
         else renderBadRequest()

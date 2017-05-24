@@ -5,11 +5,11 @@ import cn.edu.bnuz.bell.organization.Teacher
 import grails.transaction.Transactional
 
 @Transactional
-class SupervisorDepartmentService {
+class ObserverDepartmentService {
     TermService termService
     def messageSource
 
-    def list(String departmentId, String roleType) {
+    def list(String departmentId, String type) {
         Observer.executeQuery '''
 select new Map(
   s.id as id,
@@ -19,11 +19,11 @@ select new Map(
   d.id as dId,
   d.name as dName,
   s.termId as termId,
-  r.name as observerType
+  r.name as roleType
 )
-from Observer s join s.teacher t join s.department d,ObserverType r
-where s.observerType = r.id and d.id = :departmentId and r.name = :observerType
-''',[departmentId:departmentId, roleType: roleType]
+from Observer s join s.teacher t join s.department d join s.observerType r
+where d.id = :departmentId and r.name = :type
+''',[departmentId:departmentId, type: type]
     }
 
     def findTeacher(String query, String departmentId) {
@@ -40,13 +40,13 @@ and (t.id like :query or t.name like :query)
 ''', [query: "%${query}%", departmentId: departmentId]
     }
 
-    def groupBySupervisor(String departmentId) {
+    def countByObserver(String departmentId) {
         def term = termService.activeTerm
 
         def type =messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
         def result =ObservationForm.executeQuery '''
 select new map(
-  observer.name as observer,
+  observer.name as supervisor,
   count(*) as supervisorTimes,
   sum(form.totalSection) as totalSection
 )
@@ -58,7 +58,7 @@ join schedule.task task
 join task.courseClass courseClass
 join observer.department department
 where form.status > 0
-  and observerType.name = :observerType
+  and observerType.name = :type
   and courseClass.term.id = :termId
   and department.id = :departmentId
 group by observer

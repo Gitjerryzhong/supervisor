@@ -19,7 +19,7 @@ class SupervisorSettingInterceptorSpec extends Specification {
 
     void "Test supervisorSetting interceptor matching"() {
         when:"A request matches the interceptor"
-            withRequest(controller:"supervisorSetting")
+            withRequest(controller:"observerSetting")
 
         then:"The interceptor does match"
             interceptor.doesMatch()

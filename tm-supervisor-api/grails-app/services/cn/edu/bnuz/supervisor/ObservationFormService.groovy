@@ -6,6 +6,8 @@ import cn.edu.bnuz.bell.http.NotFoundException
 import cn.edu.bnuz.bell.master.TermService
 import cn.edu.bnuz.bell.operation.TaskSchedule
 import cn.edu.bnuz.bell.organization.Teacher
+import cn.edu.bnuz.bell.security.SecurityService
+import cn.edu.bnuz.bell.security.UserLogService
 import grails.converters.JSON
 import grails.transaction.Transactional
 
@@ -15,6 +17,8 @@ class ObservationFormService {
     ScheduleService scheduleService
     ObserverSettingService observerSettingService
     ObservationCriteriaService observationCriteriaService
+    UserLogService userLogService
+    SecurityService securityService
 
     ObservationForm create(String userId, ObservationFormCommand cmd){
         //防止重复录入
@@ -212,14 +216,7 @@ order by form.supervisorDate
             if (form.status) {
                 throw new BadRequestException()
             }
-            DelLog delLog = new DelLog(
-                    userId:userId,
-                    objName: form.class.name,
-                    objId: form.id,
-                    delDate: new Date(),
-                    content: "${form as JSON}"
-            )
-            delLog.save()
+            userLogService.log(securityService.userId,securityService.ipAddress,"DELETE", form,"${form as JSON}")
             form.delete()
         }
     }
@@ -282,7 +279,7 @@ order by form.supervisorDate
                 totalSection: form.totalSection,
                 teachingMethods: form.teachingMethods,
                 supervisorDate: form.supervisorDate,
-                type: form.observerType.name,
+                type: form.observerType.id,
                 typeName: form.observerType.name,
                 place: form.place,
                 earlier: form.earlier,

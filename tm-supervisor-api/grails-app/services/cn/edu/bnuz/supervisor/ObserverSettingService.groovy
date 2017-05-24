@@ -4,14 +4,16 @@ import cn.edu.bnuz.bell.http.NotFoundException
 import cn.edu.bnuz.bell.master.Term
 import cn.edu.bnuz.bell.organization.Teacher
 import cn.edu.bnuz.bell.security.SecurityService
+import cn.edu.bnuz.bell.security.UserLogService
 import grails.converters.JSON
 import grails.transaction.Transactional
 
 @Transactional
 class ObserverSettingService {
     SecurityService securityService
+    UserLogService userLogService
 
-    def save(SupervisorCommand cmd) {
+    def save(ObserverCommand cmd) {
         Observer supervisor=Observer.get(cmd.supervisorId)
         if(supervisor){
             supervisor.setObserverType(cmd.roleType)
@@ -126,14 +128,7 @@ order by t.id desc
     def delete(Long id){
         def form = Observer.get(id)
         if(form) {
-            DelLog delLog = new DelLog(
-                    userId:securityService.userId,
-                    objName: form.class.name,
-                    objId: form.id,
-                    delDate: new Date(),
-                    content: "${form as JSON}"
-            )
-            delLog.save()
+            userLogService.log(securityService.userId,securityService.ipAddress,"DELETE", form,"${form as JSON}")
             form.delete()
         }
     }

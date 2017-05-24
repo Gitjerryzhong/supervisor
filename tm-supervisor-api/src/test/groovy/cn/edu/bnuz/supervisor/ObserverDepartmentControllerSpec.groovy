@@ -1,4 +1,4 @@
-package cn.edu.bnuz
+package cn.edu.bnuz.supervisor
 
 import grails.test.mixin.TestFor
 import spock.lang.Specification
@@ -6,8 +6,8 @@ import spock.lang.Specification
 /**
  * See the API for {@link grails.test.mixin.web.ControllerUnitTestMixin} for usage instructions
  */
-@TestFor(SupervisorSettingController)
-class SupervisorSettingControllerSpec extends Specification {
+@TestFor(ObserverDepartmentController)
+class ObserverDepartmentControllerSpec extends Specification {
 
     def setup() {
     }

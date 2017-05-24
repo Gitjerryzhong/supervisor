@@ -165,7 +165,7 @@ select new map(
   schedule.totalSection as totalSection,
   course.name as course,
   place.name as place,
-  count(*) as superviseCount
+  (select superviseCount from ObservationCount where teacherId = scheduleTeacher.id) as superviseCount
 )
 from TaskSchedule schedule
 join schedule.task task
@@ -173,13 +173,10 @@ join task.courseClass courseClass
 join courseClass.course course
 join schedule.teacher scheduleTeacher
 left join schedule.place place
-left join ObservationForm form
 where place.id = :placeId
   and courseClass.term.id = :termId
   and schedule.startWeek <= :weekOfTerm
   and schedule.endWeek >= :weekOfTerm
-group by schedule.id,courseClass.name,scheduleTeacher.id,scheduleTeacher.name,schedule.startWeek,
-schedule.endWeek,schedule.oddEven,schedule.dayOfWeek,schedule.startSection,course.name,place.name
 ''', [placeId: placeId, termId: termId, weekOfTerm: weekOfTerm]
     }
 
@@ -198,7 +195,7 @@ select new map(
   schedule.totalSection as totalSection,
   course.name as course,
   place.name as place,
-  count(*) as superviseCount
+  (select superviseCount from ObservationCount where teacherId = scheduleTeacher.id) as superviseCount
 )
 from ObservationForm form
 right join form.taskSchedule schedule
@@ -208,8 +205,6 @@ join courseClass.course course
 join schedule.teacher scheduleTeacher
 left join schedule.place place
 where scheduleTeacher.id = :teacherId and courseClass.term.id = :termId
-group by schedule.id,courseClass.name,scheduleTeacher.id,scheduleTeacher.name,schedule.startWeek,
-schedule.endWeek,schedule.oddEven,schedule.dayOfWeek,schedule.startSection,course.name,place.name
 ''', [teacherId: teacherId, termId: termId]
     }
 
@@ -217,8 +212,6 @@ schedule.endWeek,schedule.oddEven,schedule.dayOfWeek,schedule.startSection,cours
         TaskSchedule.executeQuery '''
 select new map(
   schedule.id as id,
-  task.id as taskId,
-  courseClass.id as courseClassId,
   department.name as department,
   scheduleTeacher.academicTitle as academicTitle,
   courseClass.name as courseClassName,
@@ -233,7 +226,6 @@ select new map(
   course.name as course,
   course.credit as credit,
   property.name as property,
-  courseItem.name as courseItem,
   place.name as place,
   (select count(*) from TaskStudent tst where tst.task = task) as studentCount
 )
@@ -245,7 +237,6 @@ join courseClass.teacher courseTeacher
 join courseClass.department department
 join schedule.teacher scheduleTeacher
 join course.property property
-left join task.courseItem courseItem
 left join schedule.place place
 where schedule.id = :id
 ''',[id:UUID.fromString(id)]

@@ -13,7 +13,7 @@ class ReportService {
     def groupByDepartment(String userId) {
         def term = termService.activeTerm
 
-        def supervisor=messageSource.getMessage("main.supervisor.university",null, Locale.CHINA)
+        def type=messageSource.getMessage("main.supervisor.university",null, Locale.CHINA)
         def result =ObservationForm.executeQuery '''
 select new map(
   department.name as department,
@@ -27,10 +27,10 @@ join schedule.task task
 join task.courseClass courseClass
 join courseClass.department department
 where form.status > 0
-  and observerType.name = :observerType
+  and observerType.name = :type
   and courseClass.term.id = :termId
 group by department.name
-''', [termId: term.id, type: supervisor]
+''', [termId: term.id, type: type]
         return [
                 isAdmin:observerSettingService.isAdmin(userId),
                 list: result,
@@ -38,10 +38,10 @@ group by department.name
 
     }
 
-    def groupBySupervisor(String userId) {
+    def countByObserver(String userId) {
         def term = termService.activeTerm
 
-        def supervisor=messageSource.getMessage("main.supervisor.university",null, Locale.CHINA)
+        def type=messageSource.getMessage("main.supervisor.university",null, Locale.CHINA)
         def result =ObservationForm.executeQuery '''
 select new map(
   observer.id as supervisorId,
@@ -58,10 +58,10 @@ join schedule.task task
 join task.courseClass courseClass
 join observer.department department
 where form.status > 0
-  and observerType.name = :observerType
+  and observerType.name = :type
   and courseClass.term.id = :termId
 group by observer,department
-''', [termId: term.id, type: supervisor]
+''', [termId: term.id, type: type]
         return [
                 list: result,
         ]
@@ -69,7 +69,7 @@ group by observer,department
     }
 
     def teacherActive(String userId){
-        def result=TeacherActive.executeQuery'''
+        def result=ObservationPriority.executeQuery'''
 select new map(
 ta.teacherId as teacherId,
 ta.teacherName as teacherName,
@@ -77,7 +77,7 @@ ta.academicTitle as academicTitle,
 ta.departmentName as departmentName,
 ta.isnew as isnew
 )
-from TeacherActive ta
+from ObservationPriority ta
 where ta.hasSupervisor is null
 order by ta.departmentName,teacherName
 '''
@@ -97,7 +97,7 @@ order by ta.departmentName,teacherName
 
     def byTeacherForCollege(String userId) {
         def term = termService.activeTerm
-        def supervisor=messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
+        def type=messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
 
         def dept = Teacher.load(userId)?.department.id
 
@@ -116,11 +116,11 @@ join schedule.task task
 join task.courseClass courseClass
 join courseClass.department department
 where form.status > 0
-  and observerType.name = :observerType
+  and observerType.name = :type
   and courseClass.term.id = :termId
   and (scheduleTeacher.department.id = :dept or department.id = :dept)
 group by scheduleTeacher,department
-''', [termId: term.id, type: supervisor, dept:dept]
+''', [termId: term.id, type: type, dept:dept]
 
     }
 

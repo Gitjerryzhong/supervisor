@@ -14,7 +14,7 @@ class UrlMappings {
             }
         }
         "/approvers"(resources: 'approval', includes: []){
-            "/supervises"(resources: 'approval', includes: ['index'])
+            "/observations"(resources: 'approval', includes: ['index'])
         }
 
         "/publics"(resources: 'public', includes: ['index']){
@@ -23,12 +23,12 @@ class UrlMappings {
             }
         }
 
-        "/settings"(resources: 'SupervisorSetting', includes: ['index'])
+        "/settings"(resources: 'observationSetting', includes: ['index'])
 
         "/legacies"(resources:'legacyData')
 
         "/departments"(resources: 'department', includes: []){
-            "/settings"(resources: 'supervisorDepartment')
+            "/settings"(resources: 'observerDepartment')
         }
 
         "/"(view:"/index")

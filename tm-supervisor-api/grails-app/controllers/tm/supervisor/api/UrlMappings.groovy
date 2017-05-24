@@ -25,7 +25,7 @@ class UrlMappings {
             "/reports"(resources: "report"){
                 collection {
                     "/groupByDepartment"(controller: 'report', action: 'departmentReport', method: 'GET')
-                    "/groupBySupervisor"(controller: 'report', action: 'supervisorReport', method: 'GET')
+                    "/countByObserver"(controller: 'report', action: 'countByObserver', method: 'GET')
                     "/teacherSupervised"(controller: 'report', action: 'teacherSupervisedReport', method: 'GET')
                     "/reward"(controller: 'report', action: 'reward', method: 'GET')
                     "/rewardDone"(controller: 'report', action: 'rewardDone', method: 'GET')
@@ -48,10 +48,10 @@ class UrlMappings {
         }
 
         "/departments"(resources: 'department', includes: []){
-            "/settings"(resources: 'supervisorDepartment'){
+            "/settings"(resources: 'observerDepartment'){
                 collection {
-                    "/teachers"(controller: 'supervisorDepartment', action: 'teachers', method: 'GET')
-                    "/groupBySupervisor"(controller: 'supervisorDepartment', action: 'supervisorReport', method: 'GET')
+                    "/teachers"(controller: 'observerDepartment', action: 'teachers', method: 'GET')
+                    "/countByObserver"(controller: 'observerDepartment', action: 'countByObserver', method: 'GET')
                 }
             }
         }

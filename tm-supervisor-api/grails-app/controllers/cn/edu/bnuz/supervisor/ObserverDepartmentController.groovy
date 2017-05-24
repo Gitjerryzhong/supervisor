@@ -11,15 +11,15 @@ import org.springframework.security.access.prepost.PreAuthorize
  * 学院督导管理
  */
 @PreAuthorize('hasAuthority("PERM_CO_SUPERVISOR_ADMIN")')
-class SupervisorDepartmentController {
-    ObserverSettingService supervisorSettingService
+class ObserverDepartmentController {
+    ObserverSettingService observerSettingService
     SecurityService securityService
-    SupervisorDepartmentService supervisorDepartmentService
+    ObserverDepartmentService observerDepartmentService
     def messageSource
     TermService termService
     def index() {
         def collegeSupervisor = messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
-        renderJson(supervisorDepartmentService.list(securityService.departmentId, collegeSupervisor))
+        renderJson(observerDepartmentService.list(securityService.departmentId, collegeSupervisor))
     }
 
 
@@ -27,15 +27,15 @@ class SupervisorDepartmentController {
      * 保存数据
      */
     def save(){
-        SupervisorCommand cmd = new SupervisorCommand()
+        ObserverCommand cmd = new ObserverCommand()
         bindData cmd, request.JSON
         log.debug cmd.tostring()
         cmd.departmentId = ''
-        def collegeSupervisor = messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
-        def supervisorRole=ObserverType.findByName(collegeSupervisor)
+        def type = messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
+        def supervisorRole=ObserverType.findByName(type)
         cmd.roleType = supervisorRole?.id
         println cmd.tostring()
-        def form=supervisorSettingService.save(cmd)
+        def form=observerSettingService.save(cmd)
         if(form)  renderJson([id:form?.id])
         else renderBadRequest()
     }
@@ -45,24 +45,24 @@ class SupervisorDepartmentController {
      * 创建
      */
     def create(){
-        println "SupervisorDepartmentController"
-        def collegeSupervisor = messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
+        println "ObserverDepartmentController"
+        def type = messageSource.getMessage("main.supervisor.college",null, Locale.CHINA)
         renderJson(
-                roles: supervisorSettingService.roleTypes().grep{it.name == collegeSupervisor},
+                roles: observerSettingService.roleTypes().grep{it.name == type},
                 activeTerm: termService.activeTerm?.id,
-                terms: supervisorSettingService.terms
+                terms: observerSettingService.terms
 
         );
     }
 
     def teachers(){
         String query=params.q
-        renderJson(supervisorDepartmentService.findTeacher(query, securityService.departmentId))
+        renderJson(observerDepartmentService.findTeacher(query, securityService.departmentId))
 
     }
 
-    def supervisorReport(){
-        renderJson(supervisorDepartmentService.groupBySupervisor(securityService.departmentId))
+    def countByObserver(){
+        renderJson(observerDepartmentService.countByObserver(securityService.departmentId))
     }
 
     /**
@@ -76,7 +76,7 @@ class SupervisorDepartmentController {
         if(supervisor.department.id != securityService.departmentId){
             throw new ForbiddenException()
         }
-        supervisorSettingService.delete(id)
+        observerSettingService.delete(id)
         renderOk()
     }
 }
