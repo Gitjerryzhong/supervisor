@@ -23,7 +23,7 @@ class UrlMappings {
             }
         }
 
-        "/settings"(resources: 'observationSetting', includes: ['index'])
+        "/settings"(resources: 'observerSetting', includes: ['index'])
 
         "/legacies"(resources:'legacyData')
 

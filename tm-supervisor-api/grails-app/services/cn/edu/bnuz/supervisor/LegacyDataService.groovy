@@ -5,18 +5,6 @@ import grails.transaction.Transactional
 @Transactional
 class LegacyDataService {
 
-    def findSupervisors(Integer termId) {
-        ObservationLegacyForm.executeQuery'''
-select DISTINCT new map(
-    l.inpectorcode as inspectorCode,
-    l.inpectorname as inspectorName
-)
-from ObservationLegacyForm l
-where l.termId=:termId
-''',[termId: termId]
-
-    }
-
     def getTerms(){
         ObservationLegacyForm.executeQuery'''
 select DISTINCT l.termId
@@ -36,10 +24,10 @@ order by l.listentime desc
 
     def types(Integer termId){
         ObservationLegacyForm.executeQuery'''
-select l.observerType
+select l.type
 from ObservationLegacyForm l
 where l.termId=:termId
-group by l.observerType
+group by l.type
 ''',[termId: termId]
     }
 }

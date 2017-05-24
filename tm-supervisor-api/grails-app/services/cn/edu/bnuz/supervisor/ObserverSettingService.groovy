@@ -21,13 +21,13 @@ class ObserverSettingService {
         }else{
             def teacher = Teacher.get(cmd.userId)
             if(!teacher)  throw new NotFoundException()
-            supervisor = Observer.findByTeacherAndTermIdAndObserverType(teacher,cmd.termId,cmd.roleType)
+            supervisor = Observer.findByTeacherAndTermIdAndObserverType(teacher,cmd.termId,ObserverType.load(cmd.roleType))
             if(supervisor) return null
             supervisor = new Observer(
                     teacher: teacher,
                     department: teacher.department,
                     termId: cmd.termId,
-                    observerType: cmd.roleType
+                    observerType: ObserverType.load(cmd.roleType)
             )
         }
         supervisor?.save(flush:true)
@@ -43,10 +43,9 @@ select new Map(
   d.id as dId,
   d.name as dName,
   s.termId as termId,
-  r.name as observerType
+  r.name as roleType
 )
-from Observer s join s.teacher t join s.department d,ObserverType r
-where s.observerType = r.id
+from Observer s join s.teacher t join s.department d join s.observerType r
 '''
     }
 
